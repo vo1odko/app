@@ -4,38 +4,332 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#ffffff">
     <title>Мои события</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; margin: 0; padding: 16px; }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        :root {
+            --bg: #f2f4f8;
+            --card: #ffffff;
+            --text: #1c1c1e;
+            --text-muted: #8e8e93;
+            --accent: #007aff;
+            --accent-soft: #e8f1ff;
+            --danger: #ff3b30;
+            --telegram: #2AABEE;
+            --whatsapp: #25D366;
+            --max: #8B5CF6;
+            --shadow: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-hover: 0 4px 14px rgba(0,0,0,0.10);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px 16px 40px;
+            -webkit-font-smoothing: antialiased;
+        }
+
         .container { max-width: 600px; margin: 0 auto; }
-        h1, h2 { font-size: 1.4rem; margin-bottom: 1rem; }
-        .date-picker, .input-field { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 12px; background: white; box-sizing: border-box; margin-bottom: 12px; }
-        .btn { padding: 12px 20px; background: #007aff; color: white; border: none; border-radius: 12px; font-size: 1rem; cursor: pointer; margin-bottom: 12px; }
-        .btn-secondary { background: #8e8e93; }
-        .btn-small { padding: 8px 14px; font-size: 0.9rem; }
-        .date-list { list-style: none; padding: 0; margin: 0; }
-        .date-item { background: white; padding: 16px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; }
-        .date-item:active { background: #f0f0f0; }
-        .date-item .date-text { font-weight: 500; }
-        .date-item .count { color: #8e8e93; font-size: 0.9rem; }
-        .event-list { list-style: none; padding: 0; margin: 0; }
-        .event-item { background: white; padding: 16px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .event-name { font-weight: 500; }
-        .event-link { color: #007aff; text-decoration: none; font-weight: 500; padding: 8px 12px; background: #f0f7ff; border-radius: 8px; font-size: 0.9rem; }
-        .delete-btn { color: #ff3b30; background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0 8px; }
-        .empty-message { text-align: center; color: #999; padding: 2rem; }
+
+        h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin: 0;
+        }
+        h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin: 0 0 1rem;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        /* ===== Кнопки ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-secondary {
+            background: var(--card);
+            color: var(--text);
+            box-shadow: var(--shadow);
+        }
+        .btn-secondary:active { background: #f0f0f0; }
+        .btn-small {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            border-radius: 12px;
+        }
+        .btn-full { width: 100%; }
+
+        /* ===== Поля ввода ===== */
+        .input-field {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 1.5px solid #e5e5ea;
+            border-radius: 14px;
+            background: var(--card);
+            color: var(--text);
+            margin-bottom: 12px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+        .input-field::placeholder { color: var(--text-muted); }
+
+        .input-with-action {
+            position: relative;
+            margin-bottom: 12px;
+        }
+        .input-with-action .input-field {
+            margin-bottom: 0;
+            padding-right: 52px;
+        }
+        .input-action {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+        }
+        .input-action:active { transform: translateY(-50%) scale(0.9); }
+
+        /* ===== Карточки дат ===== */
+        .date-list, .event-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .date-item {
+            background: var(--card);
+            padding: 16px 18px;
+            border-radius: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s;
+        }
+        .date-item:active {
+            transform: scale(0.98);
+            box-shadow: var(--shadow-hover);
+        }
+        .date-item .date-text {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .date-item .count-badge {
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        /* ===== Карточки событий ===== */
+        .event-item {
+            background: var(--card);
+            padding: 16px 18px;
+            border-radius: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            gap: 12px;
+        }
+        .event-name {
+            font-weight: 600;
+            font-size: 1rem;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .event-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .event-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 14px;
+            background: var(--accent-soft);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .delete-btn {
+            color: var(--danger);
+            background: #ffe8e6;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+            flex-shrink: 0;
+        }
+        .delete-btn:active { transform: scale(0.9); }
+
+        /* ===== Форма ===== */
+        .form-block {
+            background: var(--card);
+            padding: 18px;
+            border-radius: 18px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+        }
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        /* ===== Кнопки мессенджеров ===== */
+        .messenger-section {
+            margin-top: 4px;
+            margin-bottom: 8px;
+        }
+        .messenger-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .messenger-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .messenger-btn {
+            flex: 1;
+            padding: 12px 8px;
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: transform 0.1s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+        .messenger-btn:active { transform: scale(0.95); }
+        .messenger-btn .icon { font-size: 1.3rem; }
+        .messenger-btn.telegram {
+            background: linear-gradient(135deg, #2AABEE 0%, #229ED9 100%);
+            box-shadow: 0 2px 8px rgba(42,171,238,0.3);
+        }
+        .messenger-btn.whatsapp {
+            background: linear-gradient(135deg, #25D366 0%, #1EBE5D 100%);
+            box-shadow: 0 2px 8px rgba(37,211,102,0.3);
+        }
+        .messenger-btn.max {
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+        }
+
+        .helper-hint {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: #f8f8fa;
+            border-radius: 10px;
+            border-left: 3px solid var(--accent);
+        }
+
+        /* ===== Прочее ===== */
+        .empty-message {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2.5rem 1rem;
+            font-size: 0.95rem;
+        }
         .hidden { display: none; }
-        .form-block { background: white; padding: 16px; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .header-row h1 { margin: 0; }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 4px;
+        }
+        .form-actions .btn { flex: 1; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .screen { animation: fadeIn 0.25s ease-out; }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- Экран 1: Главный (список дат) -->
-    <div id="screen-home">
+
+    <!-- ===== Экран 1: Главный ===== -->
+    <div id="screen-home" class="screen">
         <div class="header-row">
             <h1>Мои события</h1>
             <button class="btn btn-small" onclick="openAddForm()">+ Добавить</button>
@@ -43,24 +337,57 @@
         <ul id="dateList" class="date-list"></ul>
     </div>
 
-    <!-- Экран 2: Добавление события (выбор даты + название + ссылка) -->
-    <div id="screen-add" class="hidden">
+    <!-- ===== Экран 2: Добавление ===== -->
+    <div id="screen-add" class="hidden screen">
         <h2>Новое событие</h2>
         <div class="form-block">
+            <label class="form-label">Дата</label>
             <input type="date" id="newDate" class="input-field">
-            <input type="text" id="newName" class="input-field" placeholder="Название события">
-            <input type="url" id="newLink" class="input-field" placeholder="Ссылка на чат (https://...)">
-            <button class="btn" onclick="saveNewEvent()">Сохранить</button>
-            <button class="btn btn-secondary" onclick="showHome()">Отмена</button>
+
+            <label class="form-label">Название события</label>
+            <input type="text" id="newName" class="input-field" placeholder="Например: планёрка">
+
+            <label class="form-label">Ссылка на чат</label>
+            <div class="input-with-action">
+                <input type="url" id="newLink" class="input-field" placeholder="https://t.me/...">
+                <button class="input-action" onclick="pasteFromClipboard()" title="Вставить из буфера">📋</button>
+            </div>
+
+            <div class="messenger-section">
+                <div class="messenger-label">Открыть мессенджер, чтобы скопировать ссылку:</div>
+                <div class="messenger-buttons">
+                    <button class="messenger-btn telegram" onclick="openMessenger('telegram')">
+                        <span class="icon">✈️</span>
+                        <span>Telegram</span>
+                    </button>
+                    <button class="messenger-btn whatsapp" onclick="openMessenger('whatsapp')">
+                        <span class="icon">💬</span>
+                        <span>WhatsApp</span>
+                    </button>
+                    <button class="messenger-btn max" onclick="openMessenger('max')">
+                        <span class="icon">🅼</span>
+                        <span>MAX</span>
+                    </button>
+                </div>
+                <div class="helper-hint">
+                    💡 Откройте нужный чат в мессенджере → «Поделиться» → «Копировать ссылку» → вернитесь сюда и нажмите 📋
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn" onclick="saveNewEvent()">Сохранить</button>
+                <button class="btn btn-secondary" onclick="showHome()">Отмена</button>
+            </div>
         </div>
     </div>
 
-    <!-- Экран 3: События выбранной даты -->
-    <div id="screen-events" class="hidden">
+    <!-- ===== Экран 3: События даты ===== -->
+    <div id="screen-events" class="hidden screen">
         <h2 id="eventsTitle"></h2>
         <ul id="eventsList" class="event-list"></ul>
-        <button class="btn btn-secondary" onclick="showHome()">← Назад</button>
+        <button class="btn btn-secondary btn-full" onclick="showHome()">← Назад</button>
     </div>
+
 </div>
 
 <script>
@@ -84,13 +411,13 @@
 
     let currentDate = null;
 
-    // ===== Главный экран: список дат =====
+    // ===== Главный экран =====
     function renderHome() {
         dateList.innerHTML = '';
         const dates = Object.keys(allEvents).sort();
 
         if (dates.length === 0) {
-            dateList.innerHTML = '<li class="empty-message">Пока нет событий. Нажмите «+ Добавить».</li>';
+            dateList.innerHTML = '<li class="empty-message">Пока нет событий.<br>Нажмите «+ Добавить», чтобы создать первое.</li>';
             return;
         }
 
@@ -100,12 +427,14 @@
             li.onclick = () => openEvents(dateStr);
 
             const dateObj = new Date(dateStr + 'T00:00:00');
-            const dateText = dateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+            const dateText = dateObj.toLocaleDateString('ru-RU', {
+                day: 'numeric', month: 'long', year: 'numeric'
+            });
             const count = allEvents[dateStr].length;
 
             li.innerHTML = `
                 <span class="date-text">${dateText}</span>
-                <span class="count">${count} соб.</span>
+                <span class="count-badge">${count}</span>
             `;
             dateList.appendChild(li);
         });
@@ -136,7 +465,7 @@
         showHome();
     }
 
-    // ===== Экран событий даты =====
+    // ===== Экран событий =====
     function openEvents(dateStr) {
         currentDate = dateStr;
         screenHome.classList.add('hidden');
@@ -167,7 +496,8 @@
             nameSpan.className = 'event-name';
             nameSpan.textContent = event.name;
 
-            const rightBlock = document.createElement('div');
+            const actions = document.createElement('div');
+            actions.className = 'event-actions';
 
             const link = document.createElement('a');
             link.className = 'event-link';
@@ -180,10 +510,10 @@
             del.textContent = '✕';
             del.onclick = (e) => { e.stopPropagation(); deleteEvent(index); };
 
-            rightBlock.appendChild(link);
-            rightBlock.appendChild(del);
+            actions.appendChild(link);
+            actions.appendChild(del);
             li.appendChild(nameSpan);
-            li.appendChild(rightBlock);
+            li.appendChild(actions);
             eventsList.appendChild(li);
         });
     }
@@ -205,11 +535,52 @@
         renderHome();
     }
 
-    // Делаем функции глобальными
+    // ===== Вставка из буфера =====
+    async function pasteFromClipboard() {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+                newLink.value = text.trim();
+                // Небольшая визуальная вспышка
+                newLink.style.borderColor = '#25D366';
+                setTimeout(() => { newLink.style.borderColor = ''; }, 600);
+            } else {
+                alert('Буфер обмена пуст');
+            }
+        } catch (e) {
+            alert('Нет доступа к буферу. Нажмите на поле ссылки и вставьте вручную (долгое нажатие → «Вставить»).');
+        }
+    }
+
+    // ===== Открытие мессенджеров =====
+    function openMessenger(app) {
+        const schemes = {
+            telegram: 'tg://',
+            whatsapp: 'whatsapp://',
+            max: 'max://'
+        };
+        const url = schemes[app];
+        if (!url) return;
+
+        // Пробуем открыть приложение
+        window.location.href = url;
+
+        // Если приложение не установлено — через 1 сек предложим fallback
+        setTimeout(() => {
+            // Если страница всё ещё видна — вероятно, приложение не открылось
+            if (!document.hidden) {
+                alert('Приложение не открылось. Возможно, оно не установлено на этом устройстве.');
+            }
+        }, 1200);
+    }
+
+    // Глобальные функции
     window.openAddForm = openAddForm;
     window.saveNewEvent = saveNewEvent;
     window.showHome = showHome;
     window.openEvents = openEvents;
+    window.pasteFromClipboard = pasteFromClipboard;
+    window.openMessenger = openMessenger;
 
     // Старт
     renderHome();
