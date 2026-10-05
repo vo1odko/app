@@ -111,7 +111,6 @@
         .messenger-option.selected[data-messenger="max"] {
             border-color: var(--max); background: #f3effe;
         }
-        .messenger-option.selected .label { color: var(--text); }
 
         /* ===== Выбор типа ссылки ===== */
         .link-type-grid {
@@ -132,23 +131,6 @@
             border-color: var(--accent); background: var(--accent-soft);
         }
         .link-type-option.selected .text { color: var(--accent); }
-
-        /* ===== Режим открытия ===== */
-        .mode-toggle {
-            display: flex; gap: 6px; margin-bottom: 12px;
-            background: #f0f0f3; padding: 4px; border-radius: 12px;
-        }
-        .mode-toggle button {
-            flex: 1; padding: 10px; border: none;
-            background: transparent; color: var(--text-muted);
-            border-radius: 9px; font-size: 0.85rem;
-            font-weight: 600; cursor: pointer;
-            transition: all 0.2s; font-family: inherit;
-        }
-        .mode-toggle button.active {
-            background: var(--card); color: var(--text);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
 
         /* ===== Карточки ===== */
         .date-list, .event-list { list-style: none; padding: 0; margin: 0; }
@@ -223,6 +205,31 @@
             border-radius: 10px; border-left: 3px solid var(--accent);
         }
 
+        /* ===== Кнопка «Открыть мессенджер» ===== */
+        .open-messenger-btn {
+            width: 100%; padding: 12px 16px;
+            margin-top: 10px; border: none;
+            border-radius: 12px; color: white;
+            font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; font-family: inherit;
+            display: flex; align-items: center;
+            justify-content: center; gap: 8px;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+        .open-messenger-btn:active { transform: scale(0.98); }
+        .open-messenger-btn[data-messenger="telegram"] {
+            background: linear-gradient(135deg, #2AABEE 0%, #229ED9 100%);
+            box-shadow: 0 2px 8px rgba(42,171,238,0.3);
+        }
+        .open-messenger-btn[data-messenger="whatsapp"] {
+            background: linear-gradient(135deg, #25D366 0%, #1EBE5D 100%);
+            box-shadow: 0 2px 8px rgba(37,211,102,0.3);
+        }
+        .open-messenger-btn[data-messenger="max"] {
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+        }
+
         /* ===== Прочее ===== */
         .empty-message {
             text-align: center; color: var(--text-muted);
@@ -295,7 +302,7 @@
                         <span class="icon">📱</span>
                         <span class="text">Номер<br>телефона</span>
                     </div>
-                    <div class="link-type-option" data-type="username" onclick="selectLinkType('username')">
+                    <div class="link-type-option" data-type="username" id="usernameOption" onclick="selectLinkType('username')">
                         <span class="icon">👤</span>
                         <span class="text">Username<br>@name</span>
                     </div>
@@ -315,14 +322,12 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Как открывать</label>
-                <div class="mode-toggle" id="modeToggle">
-                    <button class="active" data-mode="app" onclick="selectMode('app')">📱 Приложение</button>
-                    <button data-mode="web" onclick="selectMode('web')">🌐 Браузер</button>
-                </div>
                 <div class="helper-hint" id="helperHint">
                     💡 Откройте нужный чат в Telegram → «Поделиться» → «Копировать ссылку» → вернитесь и нажмите 📋
                 </div>
+                <button class="open-messenger-btn" id="openMessengerBtn" data-messenger="telegram" onclick="openCurrentMessenger()">
+                    ✈️ Открыть Telegram
+                </button>
             </div>
 
             <div class="form-actions">
@@ -362,25 +367,49 @@
     const valueLabel = document.getElementById('valueLabel');
     const valueFieldGroup = document.getElementById('valueFieldGroup');
     const helperHint = document.getElementById('helperHint');
+    const usernameOption = document.getElementById('usernameOption');
+    const openMessengerBtn = document.getElementById('openMessengerBtn');
 
     let currentDate = null;
     let formState = {
         messenger: 'telegram',
-        linkType: 'url',
-        mode: 'app'
+        linkType: 'url'
     };
 
     // ===== Выбор мессенджера =====
     function selectMessenger(m) {
         formState.messenger = m;
+
+        // Обновляем подсветку
         document.querySelectorAll('.messenger-option').forEach(el => {
             el.classList.toggle('selected', el.dataset.messenger === m);
         });
+
+        // Скрываем/показываем username для WhatsApp и MAX
+        // Username работает только для Telegram
+        if (m === 'telegram') {
+            usernameOption.classList.remove('hidden');
+        } else {
+            usernameOption.classList.add('hidden');
+            // Если был выбран username, переключаем на url
+            if (formState.linkType === 'username') {
+                selectLinkType('url');
+            }
+        }
+
+        // Обновляем кнопку «Открыть мессенджер»
+        updateOpenButton();
+
         updateFormUI();
     }
 
     // ===== Выбор типа ссылки =====
     function selectLinkType(type) {
+        // Защита: username только для Telegram
+        if (type === 'username' && formState.messenger !== 'telegram') {
+            return;
+        }
+
         formState.linkType = type;
         document.querySelectorAll('.link-type-option').forEach(el => {
             el.classList.toggle('selected', el.dataset.type === type);
@@ -388,26 +417,17 @@
         updateFormUI();
     }
 
-    // ===== Выбор режима открытия =====
-    function selectMode(mode) {
-        formState.mode = mode;
-        document.querySelectorAll('#modeToggle button').forEach(el => {
-            el.classList.toggle('active', el.dataset.mode === mode);
-        });
-    }
-
-    // ===== Обновление интерфейса формы =====
+    // ===== Обновление интерфейса =====
     function updateFormUI() {
         const { messenger, linkType } = formState;
 
-        // Скрываем поле ввода, если выбрано «Без ссылки»
+        // Скрываем поле ввода для «Без ссылки»
         if (linkType === 'none') {
             valueFieldGroup.classList.add('hidden');
         } else {
             valueFieldGroup.classList.remove('hidden');
         }
 
-        // Меняем label и placeholder
         const labels = {
             url: 'Ссылка на чат',
             phone: 'Номер телефона',
@@ -421,13 +441,11 @@
             },
             whatsapp: {
                 url: 'https://chat.whatsapp.com/...',
-                phone: '+7 999 123-45-67',
-                username: 'username'
+                phone: '+7 999 123-45-67'
             },
             max: {
                 url: 'https://max.ru/...',
-                phone: '+7 999 123-45-67',
-                username: 'username'
+                phone: '+7 999 123-45-67'
             }
         };
 
@@ -438,13 +456,11 @@
             newValue.type = linkType === 'url' ? 'url' : 'text';
         }
 
-        // Обновляем подсказку
         updateHint();
     }
 
     function updateHint() {
-        const { messenger, linkType, mode } = formState;
-
+        const { messenger, linkType } = formState;
         const names = { telegram: 'Telegram', whatsapp: 'WhatsApp', max: 'MAX' };
         const name = names[messenger];
 
@@ -454,7 +470,7 @@
         }
 
         if (linkType === 'phone') {
-            helperHint.innerHTML = `💡 Введите номер в формате <b>+7 999 123-45-67</b>. Он будет преобразован в ссылку для ${name}.`;
+            helperHint.innerHTML = `💡 Введите номер в формате <b>+7 999 123-45-67</b> или <b>8 999 123-45-67</b>. Восьмёрка автоматически превратится в 7.`;
             return;
         }
 
@@ -463,7 +479,6 @@
             return;
         }
 
-        // linkType === 'url'
         if (messenger === 'whatsapp') {
             helperHint.innerHTML = `💡 В WhatsApp ссылка на группу есть только у админов. Для личного чата используйте <b>номер телефона</b>.`;
         } else if (messenger === 'max') {
@@ -471,6 +486,27 @@
         } else {
             helperHint.innerHTML = `💡 В ${name}: откройте чат → «Поделиться» → «Копировать ссылку» → вернитесь и нажмите 📋`;
         }
+    }
+
+    // ===== Кнопка «Открыть мессенджер» =====
+    function updateOpenButton() {
+        const { messenger } = formState;
+        const names = { telegram: 'Telegram', whatsapp: 'WhatsApp', max: 'MAX' };
+        const icons = { telegram: '✈️', whatsapp: '💬', max: '🅼' };
+
+        openMessengerBtn.dataset.messenger = messenger;
+        openMessengerBtn.innerHTML = `${icons[messenger]} Открыть ${names[messenger]}`;
+    }
+
+    function openCurrentMessenger() {
+        const { messenger } = formState;
+        const deepLinks = {
+            telegram: 'tg://',
+            whatsapp: 'whatsapp://',
+            max: 'max://'
+        };
+        const url = deepLinks[messenger];
+        if (url) window.location.href = url;
     }
 
     // ===== Главный экран =====
@@ -510,36 +546,36 @@
         newName.value = '';
         newValue.value = '';
 
-        // Сброс формы
-        formState = { messenger: 'telegram', linkType: 'url', mode: 'app' };
+        formState = { messenger: 'telegram', linkType: 'url' };
         selectMessenger('telegram');
         selectLinkType('url');
-        selectMode('app');
+    }
+
+    // ===== Нормализация номера телефона =====
+    function normalizePhone(value) {
+        // Оставляем только цифры
+        let cleaned = value.replace(/\D/g, '');
+
+        // Если начинается с 8 и длина 11 — меняем на 7 (Россия)
+        if (cleaned.startsWith('8') && cleaned.length === 11) {
+            cleaned = '7' + cleaned.slice(1);
+        }
+
+        return cleaned;
     }
 
     // ===== Генерация ссылки =====
     function buildLink(messenger, linkType, value) {
         if (linkType === 'none') {
-            // Возвращаем deep link на сам мессенджер
-            const appLinks = {
-                telegram: 'tg://',
-                whatsapp: 'whatsapp://',
-                max: 'max://'
-            };
-            const webLinks = {
-                telegram: 'https://web.telegram.org',
-                whatsapp: 'https://web.whatsapp.com',
-                max: 'https://web.max.ru'
-            };
-            return formState.mode === 'web' ? webLinks[messenger] : appLinks[messenger];
+            return messenger; // Сохраняем идентификатор мессенджера
         }
 
         if (linkType === 'url') {
-            return value; // Уже готовая ссылка
+            return value;
         }
 
         if (linkType === 'phone') {
-            const cleaned = value.replace(/\D/g, ''); // Оставляем только цифры
+            const cleaned = normalizePhone(value);
             if (messenger === 'whatsapp') {
                 return `https://wa.me/${cleaned}`;
             }
@@ -552,16 +588,9 @@
         }
 
         if (linkType === 'username') {
-            const cleaned = value.replace(/^@/, ''); // Убираем @ если есть
+            const cleaned = value.replace(/^@/, '');
             if (messenger === 'telegram') {
                 return `https://t.me/${cleaned}`;
-            }
-            if (messenger === 'max') {
-                return `https://max.ru/${cleaned}`;
-            }
-            if (messenger === 'whatsapp') {
-                // У WhatsApp нет username, только телефон
-                return `https://wa.me/${cleaned}`;
             }
         }
 
@@ -590,8 +619,7 @@
             name: name,
             link: finalLink,
             messenger: formState.messenger,
-            linkType: formState.linkType,
-            mode: formState.mode
+            linkType: formState.linkType
         });
         saveToStorage();
         showHome();
@@ -625,6 +653,11 @@
             whatsapp: 'WhatsApp',
             max: 'MAX'
         };
+        const deepLinks = {
+            telegram: 'tg://',
+            whatsapp: 'whatsapp://',
+            max: 'max://'
+        };
 
         events.forEach((event, index) => {
             const li = document.createElement('li');
@@ -649,10 +682,16 @@
 
             const link = document.createElement('a');
             link.className = 'event-link';
-            link.href = event.link;
             link.textContent = 'Открыть';
             link.target = '_blank';
             link.dataset.messenger = event.messenger || 'telegram';
+
+            // Если ссылки нет — открываем сам мессенджер
+            if (event.linkType === 'none' || !event.link || event.link === event.messenger) {
+                link.href = deepLinks[event.messenger] || '#';
+            } else {
+                link.href = event.link;
+            }
 
             const del = document.createElement('button');
             del.className = 'delete-btn';
@@ -708,7 +747,7 @@
     window.pasteFromClipboard = pasteFromClipboard;
     window.selectMessenger = selectMessenger;
     window.selectLinkType = selectLinkType;
-    window.selectMode = selectMode;
+    window.openCurrentMessenger = openCurrentMessenger;
 
     // Старт
     renderHome();
