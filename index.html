@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Мои события</title>
+    <!-- Подключаем манифест для PWA (см. ниже) -->
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* ... ваши стили остаются без изменений ... */
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; margin: 0; padding: 16px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1, h2 { font-size: 1.4rem; margin-bottom: 1rem; }
+        .date-picker, .input-field { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 12px; background: white; box-sizing: border-box; margin-bottom: 12px; }
+        .btn { padding: 12px 20px; background: #007aff; color: white; border: none; border-radius: 12px; font-size: 1rem; cursor: pointer; margin-bottom: 12px; }
+        .btn-secondary { background: #8e8e93; }
+        .event-list { list-style: none; padding: 0; margin: 0; }
+        .event-item { background: white; padding: 16px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .event-name { font-weight: 500; }
+        .event-link { color: #007aff; text-decoration: none; font-weight: 500; padding: 8px 12px; background: #f0f7ff; border-radius: 8px; font-size: 0.9rem; }
+        .delete-btn { color: #ff3b30; background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0 8px; }
+        .empty-message { text-align: center; color: #999; padding: 2rem; }
+        .hidden { display: none; }
+        .form-block { background: white; padding: 16px; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="screen-calendar">
+        <h1>Выберите дату</h1>
+        <input type="date" id="dateInput" class="date-picker">
+    </div>
+    <div id="screen-events" class="hidden">
+        <h2 id="eventsTitle"></h2>
+        <div class="form-block">
+            <input type="text" id="eventName" class="input-field" placeholder="Название события">
+            <input type="url" id="eventLink" class="input-field" placeholder="Ссылка на чат (https://...)">
+            <button class="btn" onclick="addEvent()">+ Добавить событие</button>
+        </div>
+        <ul id="eventsList" class="event-list"></ul>
+        <button class="btn btn-secondary" onclick="showCalendar()">← Назад к датам</button>
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // РАБОТА С ЛОКАЛЬНЫМ ХРАНИЛИЩЕМ
+    // ============================================
+    
+    // Ключ, под которым данные хранятся в памяти браузера
+    const STORAGE_KEY = 'my_events_data';
+
+    // Загружаем все данные из памяти при запуске
+    let allEvents = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+    // Функция сохранения данных в память
+    function saveToStorage() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(allEvents));
+    }
+
+    // Элементы DOM
+    const dateInput = document.getElementById('dateInput');
+    const screenCalendar = document.getElementById('screen-calendar');
+    const screenEvents = document.getElementById('screen-events');
+    const eventsTitle = document.getElementById('eventsTitle');
+    const eventsList = document.getElementById('eventsList');
+    const eventName = document.getElementById('eventName');
+    const eventLink = document.getElementById('eventLink');
+
+    let currentDate = null;
+
+    // Устанавливаем сегодняшнюю дату
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.value = today;
+
+    dateInput.addEventListener('change', function() {
+        if (this.value) openEvents(this.value);
+    });
+
+    function openEvents(dateString) {
+        currentDate = dateString;
+        screenCalendar.classList.add('hidden');
+        screenEvents.classList.remove('hidden');
+
+        const dateObj = new Date(dateString + 'T00:00:00');
+        eventsTitle.textContent = dateObj.toLocaleDateString('ru-RU', {
+            day: 'numeric', month: 'long', year: 'numeric'
+        });
+
+        renderEvents();
+    }
+
+    function renderEvents() {
+        eventsList.innerHTML = '';
+        const events = allEvents[currentDate] || [];
+
+        if (events.length === 0) {
+            eventsList.innerHTML = '<li class="empty-message">На этот день событий нет</li>';
+            return;
+        }
+
+        events.forEach((event, index) => {
+            const li = document.createElement('li');
+            li.className = 'event-item';
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'event-name';
+            nameSpan.textContent = event.name;
+
+            const rightBlock = document.createElement('div');
+
+            const link = document.createElement('a');
+            link.className = 'event-link';
+            link.href = event.link;
+            link.textContent = 'Открыть';
+            link.target = '_blank';
+            
+            // Специальная обработка для ссылок Telegram/WhatsApp
+            link.addEventListener('click', function(e) {
+                // На iPhone ссылки на приложения открываются лучше, если использовать location.href
+                // Оставляем target="_blank" для универсальности
+            });
+
+            const del = document.createElement('button');
+            del.className = 'delete-btn';
+            del.textContent = '✕';
+            del.onclick = () => deleteEvent(index);
+
+            rightBlock.appendChild(link);
+            rightBlock.appendChild(del);
+            li.appendChild(nameSpan);
+            li.appendChild(rightBlock);
+            eventsList.appendChild(li);
+        });
+    }
+
+    function addEvent() {
+        const name = eventName.value.trim();
+        const link = eventLink.value.trim();
+        if (!name || !link) {
+            alert('Заполните название и ссылку');
+            return;
+        }
+
+        if (!allEvents[currentDate]) {
+            allEvents[currentDate] = [];
+        }
+
+        allEvents[currentDate].push({
+            name: name,
+            link: link,
+            createdAt: new Date().toISOString()
+        });
+
+        saveToStorage();
+        renderEvents();
+
+        eventName.value = '';
+        eventLink.value = '';
+    }
+
+    function deleteEvent(index) {
+        if (!confirm('Удалить событие?')) return;
+        
+        allEvents[currentDate].splice(index, 1);
+        
+        // Если на эту дату больше нет событий, удаляем ключ
+        if (allEvents[currentDate].length === 0) {
+            delete allEvents[currentDate];
+        }
+        
+        saveToStorage();
+        renderEvents();
+    }
+
+    function showCalendar() {
+        screenEvents.classList.add('hidden');
+        screenCalendar.classList.remove('hidden');
+    }
+
+    // Делаем функции глобальными
+    window.addEvent = addEvent;
+    window.showCalendar = showCalendar;
+</script>
+</body>
+</html>
