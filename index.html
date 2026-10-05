@@ -4,246 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Мои события</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-
-        :root {
-            --bg: #f2f4f8;
-            --card: #ffffff;
-            --text: #1c1c1e;
-            --text-muted: #8e8e93;
-            --accent: #007aff;
-            --accent-soft: #e8f1ff;
-            --danger: #ff3b30;
-            --telegram: #2AABEE;
-            --whatsapp: #25D366;
-            --max: #8B5CF6;
-            --shadow: 0 2px 8px rgba(0,0,0,0.06);
-            --shadow-hover: 0 4px 14px rgba(0,0,0,0.10);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px 16px 40px;
-            -webkit-font-smoothing: antialiased;
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; margin: 0; padding: 16px; }
         .container { max-width: 600px; margin: 0 auto; }
-
-        h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
-        h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 1rem; }
-
-        .header-row {
-            display: flex; justify-content: space-between;
-            align-items: center; margin-bottom: 1.25rem;
-        }
-
-        /* ===== Кнопки ===== */
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            gap: 6px; padding: 12px 20px; background: var(--accent);
-            color: white; border: none; border-radius: 14px;
-            font-size: 1rem; font-weight: 600; cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.2s; font-family: inherit;
-        }
-        .btn:active { transform: scale(0.97); }
-        .btn-secondary { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
-        .btn-secondary:active { background: #f0f0f0; }
-        .btn-small { padding: 10px 16px; font-size: 0.9rem; border-radius: 12px; }
-        .btn-full { width: 100%; }
-
-        /* ===== Поля ===== */
-        .input-field {
-            width: 100%; padding: 14px 16px; font-size: 16px;
-            border: 1.5px solid #e5e5ea; border-radius: 14px;
-            background: var(--card); color: var(--text);
-            margin-bottom: 12px; font-family: inherit;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            -webkit-appearance: none; appearance: none;
-        }
-        .input-field:focus {
-            outline: none; border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-soft);
-        }
-        .input-field::placeholder { color: var(--text-muted); }
-
-        .input-with-action { position: relative; margin-bottom: 12px; }
-        .input-with-action .input-field { margin-bottom: 0; padding-right: 52px; }
-        .input-action {
-            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-            width: 40px; height: 40px; border: none;
-            background: var(--accent-soft); color: var(--accent);
-            border-radius: 10px; font-size: 1.1rem; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: transform 0.1s;
-        }
-        .input-action:active { transform: translateY(-50%) scale(0.9); }
-
-        /* ===== Выбор мессенджера ===== */
-        .messenger-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 8px; margin-bottom: 14px;
-        }
-        .messenger-option {
-            padding: 12px 8px; border: 2px solid #e5e5ea;
-            border-radius: 14px; background: var(--card);
-            cursor: pointer; text-align: center;
-            transition: all 0.2s; font-family: inherit;
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-        }
-        .messenger-option .icon { font-size: 1.4rem; }
-        .messenger-option .label { font-size: 0.8rem; font-weight: 600; color: var(--text); }
-        .messenger-option:active { transform: scale(0.96); }
-
-        .messenger-option.selected[data-messenger="telegram"] {
-            border-color: var(--telegram); background: #eaf7fe;
-        }
-        .messenger-option.selected[data-messenger="whatsapp"] {
-            border-color: var(--whatsapp); background: #e8faee;
-        }
-        .messenger-option.selected[data-messenger="max"] {
-            border-color: var(--max); background: #f3effe;
-        }
-        .messenger-option.selected .label { color: var(--text); }
-
-        /* ===== Выбор типа ссылки ===== */
-        .link-type-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr);
-            gap: 8px; margin-bottom: 12px;
-        }
-        .link-type-option {
-            padding: 12px; border: 1.5px solid #e5e5ea;
-            border-radius: 12px; background: var(--card);
-            cursor: pointer; text-align: left;
-            transition: all 0.2s; font-family: inherit;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .link-type-option .icon { font-size: 1.2rem; }
-        .link-type-option .text { font-size: 0.85rem; font-weight: 600; color: var(--text); line-height: 1.2; }
-        .link-type-option:active { transform: scale(0.97); }
-        .link-type-option.selected {
-            border-color: var(--accent); background: var(--accent-soft);
-        }
-        .link-type-option.selected .text { color: var(--accent); }
-
-        /* ===== Режим открытия ===== */
-        .mode-toggle {
-            display: flex; gap: 6px; margin-bottom: 12px;
-            background: #f0f0f3; padding: 4px; border-radius: 12px;
-        }
-        .mode-toggle button {
-            flex: 1; padding: 10px; border: none;
-            background: transparent; color: var(--text-muted);
-            border-radius: 9px; font-size: 0.85rem;
-            font-weight: 600; cursor: pointer;
-            transition: all 0.2s; font-family: inherit;
-        }
-        .mode-toggle button.active {
-            background: var(--card); color: var(--text);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        /* ===== Карточки ===== */
-        .date-list, .event-list { list-style: none; padding: 0; margin: 0; }
-        .date-item {
-            background: var(--card); padding: 16px 18px;
-            border-radius: 16px; margin-bottom: 10px;
-            display: flex; justify-content: space-between;
-            align-items: center; box-shadow: var(--shadow);
-            cursor: pointer; transition: transform 0.15s, box-shadow 0.2s;
-        }
-        .date-item:active { transform: scale(0.98); box-shadow: var(--shadow-hover); }
-        .date-item .date-text { font-weight: 600; font-size: 1rem; }
-        .date-item .count-badge {
-            background: var(--accent-soft); color: var(--accent);
-            font-size: 0.8rem; font-weight: 600;
-            padding: 4px 10px; border-radius: 20px;
-            min-width: 28px; text-align: center;
-        }
-
-        .event-item {
-            background: var(--card); padding: 16px 18px;
-            border-radius: 16px; margin-bottom: 10px;
-            display: flex; justify-content: space-between;
-            align-items: center; box-shadow: var(--shadow); gap: 12px;
-        }
-        .event-info { flex: 1; overflow: hidden; }
-        .event-name { font-weight: 600; font-size: 1rem; }
-        .event-messenger {
-            font-size: 0.75rem; color: var(--text-muted);
-            margin-top: 2px; text-transform: uppercase;
-            letter-spacing: 0.03em; font-weight: 600;
-        }
-        .event-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-        .event-link {
-            color: white; text-decoration: none;
-            font-weight: 600; padding: 9px 14px;
-            background: var(--accent); border-radius: 10px;
-            font-size: 0.9rem; white-space: nowrap;
-        }
-        .event-link[data-messenger="telegram"] { background: var(--telegram); }
-        .event-link[data-messenger="whatsapp"] { background: var(--whatsapp); }
-        .event-link[data-messenger="max"] { background: var(--max); }
-
-        .delete-btn {
-            color: var(--danger); background: #ffe8e6;
-            border: none; font-size: 1rem; cursor: pointer;
-            padding: 0; width: 36px; height: 36px;
-            border-radius: 10px; display: flex;
-            align-items: center; justify-content: center;
-            transition: transform 0.1s; flex-shrink: 0;
-        }
-        .delete-btn:active { transform: scale(0.9); }
-
-        /* ===== Форма ===== */
-        .form-block {
-            background: var(--card); padding: 18px;
-            border-radius: 18px; margin-bottom: 16px;
-            box-shadow: var(--shadow);
-        }
-        .form-label {
-            display: block; font-size: 0.78rem;
-            font-weight: 700; color: var(--text-muted);
-            margin-bottom: 8px; text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .form-group { margin-bottom: 18px; }
-
-        .helper-hint {
-            font-size: 0.82rem; color: var(--text-muted);
-            line-height: 1.4; margin-top: 10px;
-            padding: 10px 12px; background: #f8f8fa;
-            border-radius: 10px; border-left: 3px solid var(--accent);
-        }
-
-        /* ===== Прочее ===== */
-        .empty-message {
-            text-align: center; color: var(--text-muted);
-            padding: 2.5rem 1rem; font-size: 0.95rem;
-        }
+        h1, h2 { font-size: 1.4rem; margin-bottom: 1rem; }
+        .date-picker, .input-field { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 12px; background: white; box-sizing: border-box; margin-bottom: 12px; }
+        .btn { padding: 12px 20px; background: #007aff; color: white; border: none; border-radius: 12px; font-size: 1rem; cursor: pointer; margin-bottom: 12px; }
+        .btn-secondary { background: #8e8e93; }
+        .btn-small { padding: 8px 14px; font-size: 0.9rem; }
+        .date-list { list-style: none; padding: 0; margin: 0; }
+        .date-item { background: white; padding: 16px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; }
+        .date-item:active { background: #f0f0f0; }
+        .date-item .date-text { font-weight: 500; }
+        .date-item .count { color: #8e8e93; font-size: 0.9rem; }
+        .event-list { list-style: none; padding: 0; margin: 0; }
+        .event-item { background: white; padding: 16px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .event-name { font-weight: 500; }
+        .event-link { color: #007aff; text-decoration: none; font-weight: 500; padding: 8px 12px; background: #f0f7ff; border-radius: 8px; font-size: 0.9rem; }
+        .delete-btn { color: #ff3b30; background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0 8px; }
+        .empty-message { text-align: center; color: #999; padding: 2rem; }
         .hidden { display: none; }
-        .form-actions { display: flex; gap: 10px; margin-top: 4px; }
-        .form-actions .btn { flex: 1; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .screen { animation: fadeIn 0.25s ease-out; }
+        .form-block { background: white; padding: 16px; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .header-row h1 { margin: 0; }
     </style>
 </head>
 <body>
 <div class="container">
-
-    <!-- ===== Экран 1: Главный ===== -->
-    <div id="screen-home" class="screen">
+    <!-- Экран 1: Главный (список дат) -->
+    <div id="screen-home">
         <div class="header-row">
             <h1>Мои события</h1>
             <button class="btn btn-small" onclick="openAddForm()">+ Добавить</button>
@@ -251,94 +43,24 @@
         <ul id="dateList" class="date-list"></ul>
     </div>
 
-    <!-- ===== Экран 2: Добавление ===== -->
-    <div id="screen-add" class="hidden screen">
+    <!-- Экран 2: Добавление события (выбор даты + название + ссылка) -->
+    <div id="screen-add" class="hidden">
         <h2>Новое событие</h2>
         <div class="form-block">
-
-            <div class="form-group">
-                <label class="form-label">Дата</label>
-                <input type="date" id="newDate" class="input-field">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Название</label>
-                <input type="text" id="newName" class="input-field" placeholder="Например: планёрка">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Мессенджер</label>
-                <div class="messenger-grid" id="messengerGrid">
-                    <div class="messenger-option selected" data-messenger="telegram" onclick="selectMessenger('telegram')">
-                        <span class="icon">✈️</span>
-                        <span class="label">Telegram</span>
-                    </div>
-                    <div class="messenger-option" data-messenger="whatsapp" onclick="selectMessenger('whatsapp')">
-                        <span class="icon">💬</span>
-                        <span class="label">WhatsApp</span>
-                    </div>
-                    <div class="messenger-option" data-messenger="max" onclick="selectMessenger('max')">
-                        <span class="icon">🅼</span>
-                        <span class="label">MAX</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Тип ссылки</label>
-                <div class="link-type-grid" id="linkTypeGrid">
-                    <div class="link-type-option selected" data-type="url" onclick="selectLinkType('url')">
-                        <span class="icon">🔗</span>
-                        <span class="text">Ссылка<br>на чат</span>
-                    </div>
-                    <div class="link-type-option" data-type="phone" onclick="selectLinkType('phone')">
-                        <span class="icon">📱</span>
-                        <span class="text">Номер<br>телефона</span>
-                    </div>
-                    <div class="link-type-option" data-type="username" onclick="selectLinkType('username')">
-                        <span class="icon">👤</span>
-                        <span class="text">Username<br>@name</span>
-                    </div>
-                    <div class="link-type-option" data-type="none" onclick="selectLinkType('none')">
-                        <span class="icon">💬</span>
-                        <span class="text">Без ссылки<br>(только чат)</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group" id="valueFieldGroup">
-                <label class="form-label" id="valueLabel">Ссылка на чат</label>
-                <div class="input-with-action">
-                    <input type="text" id="newValue" class="input-field" placeholder="https://t.me/...">
-                    <button class="input-action" onclick="pasteFromClipboard()" title="Вставить">📋</button>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Как открывать</label>
-                <div class="mode-toggle" id="modeToggle">
-                    <button class="active" data-mode="app" onclick="selectMode('app')">📱 Приложение</button>
-                    <button data-mode="web" onclick="selectMode('web')">🌐 Браузер</button>
-                </div>
-                <div class="helper-hint" id="helperHint">
-                    💡 Откройте нужный чат в Telegram → «Поделиться» → «Копировать ссылку» → вернитесь и нажмите 📋
-                </div>
-            </div>
-
-            <div class="form-actions">
-                <button class="btn" onclick="saveNewEvent()">Сохранить</button>
-                <button class="btn btn-secondary" onclick="showHome()">Отмена</button>
-            </div>
+            <input type="date" id="newDate" class="input-field">
+            <input type="text" id="newName" class="input-field" placeholder="Название события">
+            <input type="url" id="newLink" class="input-field" placeholder="Ссылка на чат (https://...)">
+            <button class="btn" onclick="saveNewEvent()">Сохранить</button>
+            <button class="btn btn-secondary" onclick="showHome()">Отмена</button>
         </div>
     </div>
 
-    <!-- ===== Экран 3: События ===== -->
-    <div id="screen-events" class="hidden screen">
+    <!-- Экран 3: События выбранной даты -->
+    <div id="screen-events" class="hidden">
         <h2 id="eventsTitle"></h2>
         <ul id="eventsList" class="event-list"></ul>
-        <button class="btn btn-secondary btn-full" onclick="showHome()">← Назад</button>
+        <button class="btn btn-secondary" onclick="showHome()">← Назад</button>
     </div>
-
 </div>
 
 <script>
@@ -358,128 +80,17 @@
     const eventsList = document.getElementById('eventsList');
     const newDate = document.getElementById('newDate');
     const newName = document.getElementById('newName');
-    const newValue = document.getElementById('newValue');
-    const valueLabel = document.getElementById('valueLabel');
-    const valueFieldGroup = document.getElementById('valueFieldGroup');
-    const helperHint = document.getElementById('helperHint');
+    const newLink = document.getElementById('newLink');
 
     let currentDate = null;
-    let formState = {
-        messenger: 'telegram',
-        linkType: 'url',
-        mode: 'app'
-    };
 
-    // ===== Выбор мессенджера =====
-    function selectMessenger(m) {
-        formState.messenger = m;
-        document.querySelectorAll('.messenger-option').forEach(el => {
-            el.classList.toggle('selected', el.dataset.messenger === m);
-        });
-        updateFormUI();
-    }
-
-    // ===== Выбор типа ссылки =====
-    function selectLinkType(type) {
-        formState.linkType = type;
-        document.querySelectorAll('.link-type-option').forEach(el => {
-            el.classList.toggle('selected', el.dataset.type === type);
-        });
-        updateFormUI();
-    }
-
-    // ===== Выбор режима открытия =====
-    function selectMode(mode) {
-        formState.mode = mode;
-        document.querySelectorAll('#modeToggle button').forEach(el => {
-            el.classList.toggle('active', el.dataset.mode === mode);
-        });
-    }
-
-    // ===== Обновление интерфейса формы =====
-    function updateFormUI() {
-        const { messenger, linkType } = formState;
-
-        // Скрываем поле ввода, если выбрано «Без ссылки»
-        if (linkType === 'none') {
-            valueFieldGroup.classList.add('hidden');
-        } else {
-            valueFieldGroup.classList.remove('hidden');
-        }
-
-        // Меняем label и placeholder
-        const labels = {
-            url: 'Ссылка на чат',
-            phone: 'Номер телефона',
-            username: 'Username (без @)'
-        };
-        const placeholders = {
-            telegram: {
-                url: 'https://t.me/...',
-                phone: '+7 999 123-45-67',
-                username: 'username'
-            },
-            whatsapp: {
-                url: 'https://chat.whatsapp.com/...',
-                phone: '+7 999 123-45-67',
-                username: 'username'
-            },
-            max: {
-                url: 'https://max.ru/...',
-                phone: '+7 999 123-45-67',
-                username: 'username'
-            }
-        };
-
-        if (linkType !== 'none') {
-            valueLabel.textContent = labels[linkType] || 'Значение';
-            newValue.placeholder = placeholders[messenger]?.[linkType] || '';
-            newValue.value = '';
-            newValue.type = linkType === 'url' ? 'url' : 'text';
-        }
-
-        // Обновляем подсказку
-        updateHint();
-    }
-
-    function updateHint() {
-        const { messenger, linkType, mode } = formState;
-
-        const names = { telegram: 'Telegram', whatsapp: 'WhatsApp', max: 'MAX' };
-        const name = names[messenger];
-
-        if (linkType === 'none') {
-            helperHint.innerHTML = `💡 Ссылка не сохранится. При нажатии на событие откроется ${name}, где вы сами найдёте нужный чат.`;
-            return;
-        }
-
-        if (linkType === 'phone') {
-            helperHint.innerHTML = `💡 Введите номер в формате <b>+7 999 123-45-67</b>. Он будет преобразован в ссылку для ${name}.`;
-            return;
-        }
-
-        if (linkType === 'username') {
-            helperHint.innerHTML = `💡 Введите username без символа @. Например: <b>my_chat_name</b>.`;
-            return;
-        }
-
-        // linkType === 'url'
-        if (messenger === 'whatsapp') {
-            helperHint.innerHTML = `💡 В WhatsApp ссылка на группу есть только у админов. Для личного чата используйте <b>номер телефона</b>.`;
-        } else if (messenger === 'max') {
-            helperHint.innerHTML = `💡 Ссылку на чат MAX можно получить в веб-версии <b>web.max.ru</b> (из адресной строки).`;
-        } else {
-            helperHint.innerHTML = `💡 В ${name}: откройте чат → «Поделиться» → «Копировать ссылку» → вернитесь и нажмите 📋`;
-        }
-    }
-
-    // ===== Главный экран =====
+    // ===== Главный экран: список дат =====
     function renderHome() {
         dateList.innerHTML = '';
         const dates = Object.keys(allEvents).sort();
 
         if (dates.length === 0) {
-            dateList.innerHTML = '<li class="empty-message">Пока нет событий.<br>Нажмите «+ Добавить», чтобы создать первое.</li>';
+            dateList.innerHTML = '<li class="empty-message">Пока нет событий. Нажмите «+ Добавить».</li>';
             return;
         }
 
@@ -489,14 +100,12 @@
             li.onclick = () => openEvents(dateStr);
 
             const dateObj = new Date(dateStr + 'T00:00:00');
-            const dateText = dateObj.toLocaleDateString('ru-RU', {
-                day: 'numeric', month: 'long', year: 'numeric'
-            });
+            const dateText = dateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
             const count = allEvents[dateStr].length;
 
             li.innerHTML = `
                 <span class="date-text">${dateText}</span>
-                <span class="count-badge">${count}</span>
+                <span class="count">${count} соб.</span>
             `;
             dateList.appendChild(li);
         });
@@ -508,96 +117,26 @@
         screenAdd.classList.remove('hidden');
         newDate.value = new Date().toISOString().split('T')[0];
         newName.value = '';
-        newValue.value = '';
-
-        // Сброс формы
-        formState = { messenger: 'telegram', linkType: 'url', mode: 'app' };
-        selectMessenger('telegram');
-        selectLinkType('url');
-        selectMode('app');
-    }
-
-    // ===== Генерация ссылки =====
-    function buildLink(messenger, linkType, value) {
-        if (linkType === 'none') {
-            // Возвращаем deep link на сам мессенджер
-            const appLinks = {
-                telegram: 'tg://',
-                whatsapp: 'whatsapp://',
-                max: 'max://'
-            };
-            const webLinks = {
-                telegram: 'https://web.telegram.org',
-                whatsapp: 'https://web.whatsapp.com',
-                max: 'https://web.max.ru'
-            };
-            return formState.mode === 'web' ? webLinks[messenger] : appLinks[messenger];
-        }
-
-        if (linkType === 'url') {
-            return value; // Уже готовая ссылка
-        }
-
-        if (linkType === 'phone') {
-            const cleaned = value.replace(/\D/g, ''); // Оставляем только цифры
-            if (messenger === 'whatsapp') {
-                return `https://wa.me/${cleaned}`;
-            }
-            if (messenger === 'telegram') {
-                return `https://t.me/+${cleaned}`;
-            }
-            if (messenger === 'max') {
-                return `https://max.ru/+${cleaned}`;
-            }
-        }
-
-        if (linkType === 'username') {
-            const cleaned = value.replace(/^@/, ''); // Убираем @ если есть
-            if (messenger === 'telegram') {
-                return `https://t.me/${cleaned}`;
-            }
-            if (messenger === 'max') {
-                return `https://max.ru/${cleaned}`;
-            }
-            if (messenger === 'whatsapp') {
-                // У WhatsApp нет username, только телефон
-                return `https://wa.me/${cleaned}`;
-            }
-        }
-
-        return value;
+        newLink.value = '';
     }
 
     function saveNewEvent() {
         const date = newDate.value;
         const name = newName.value.trim();
-        const value = newValue.value.trim();
+        const link = newLink.value.trim();
 
-        if (!date || !name) {
-            alert('Заполните дату и название');
+        if (!date || !name || !link) {
+            alert('Заполните все поля');
             return;
         }
-
-        if (formState.linkType !== 'none' && !value) {
-            alert('Введите значение ссылки или выберите «Без ссылки»');
-            return;
-        }
-
-        const finalLink = buildLink(formState.messenger, formState.linkType, value);
 
         if (!allEvents[date]) allEvents[date] = [];
-        allEvents[date].push({
-            name: name,
-            link: finalLink,
-            messenger: formState.messenger,
-            linkType: formState.linkType,
-            mode: formState.mode
-        });
+        allEvents[date].push({ name, link });
         saveToStorage();
         showHome();
     }
 
-    // ===== Экран событий =====
+    // ===== Экран событий даты =====
     function openEvents(dateStr) {
         currentDate = dateStr;
         screenHome.classList.add('hidden');
@@ -620,49 +159,31 @@
             return;
         }
 
-        const messengerNames = {
-            telegram: 'Telegram',
-            whatsapp: 'WhatsApp',
-            max: 'MAX'
-        };
-
         events.forEach((event, index) => {
             const li = document.createElement('li');
             li.className = 'event-item';
 
-            const info = document.createElement('div');
-            info.className = 'event-info';
-
-            const nameSpan = document.createElement('div');
+            const nameSpan = document.createElement('span');
             nameSpan.className = 'event-name';
             nameSpan.textContent = event.name;
 
-            const msgrSpan = document.createElement('div');
-            msgrSpan.className = 'event-messenger';
-            msgrSpan.textContent = messengerNames[event.messenger] || 'Мессенджер';
-
-            info.appendChild(nameSpan);
-            info.appendChild(msgrSpan);
-
-            const actions = document.createElement('div');
-            actions.className = 'event-actions';
+            const rightBlock = document.createElement('div');
 
             const link = document.createElement('a');
             link.className = 'event-link';
             link.href = event.link;
             link.textContent = 'Открыть';
             link.target = '_blank';
-            link.dataset.messenger = event.messenger || 'telegram';
 
             const del = document.createElement('button');
             del.className = 'delete-btn';
             del.textContent = '✕';
             del.onclick = (e) => { e.stopPropagation(); deleteEvent(index); };
 
-            actions.appendChild(link);
-            actions.appendChild(del);
-            li.appendChild(info);
-            li.appendChild(actions);
+            rightBlock.appendChild(link);
+            rightBlock.appendChild(del);
+            li.appendChild(nameSpan);
+            li.appendChild(rightBlock);
             eventsList.appendChild(li);
         });
     }
@@ -684,35 +205,14 @@
         renderHome();
     }
 
-    // ===== Буфер обмена =====
-    async function pasteFromClipboard() {
-        try {
-            const text = await navigator.clipboard.readText();
-            if (text) {
-                newValue.value = text.trim();
-                newValue.style.borderColor = '#25D366';
-                setTimeout(() => { newValue.style.borderColor = ''; }, 600);
-            } else {
-                alert('Буфер обмена пуст');
-            }
-        } catch (e) {
-            alert('Нет доступа к буферу. Вставьте вручную: долгое нажатие на поле → «Вставить».');
-        }
-    }
-
-    // Глобальные функции
+    // Делаем функции глобальными
     window.openAddForm = openAddForm;
     window.saveNewEvent = saveNewEvent;
     window.showHome = showHome;
     window.openEvents = openEvents;
-    window.pasteFromClipboard = pasteFromClipboard;
-    window.selectMessenger = selectMessenger;
-    window.selectLinkType = selectLinkType;
-    window.selectMode = selectMode;
 
     // Старт
     renderHome();
-    updateFormUI();
 </script>
 </body>
 </html>
