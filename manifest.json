@@ -1,6 +1,6 @@
 {
   "name": "Мои события",
-  "short_name": "События",
+  "short_name": "LOA",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f5f5f5",
